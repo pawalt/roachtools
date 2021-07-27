@@ -1,0 +1,21 @@
+#!/bin/bash
+
+# USAGE: `watch-pr <pr_number>`
+# Issues a macos desktop notification when the CI the specified PR changes
+
+pr_num=$1
+
+last_status=$(gh pr checks $pr_num --repo github.com/cockroachdb/cockroach)
+
+echo "Watching PR $pr_num"
+
+while true; do
+    new_status=$(gh pr checks $pr_num --repo github.com/cockroachdb/cockroach)
+    if [ "$last_status" != "$new_status" ]; then
+        osascript -e "display notification \"Update to PR #$pr_num\" with title \"PR status changed\""
+        gh pr checks $pr_num --repo github.com/cockroachdb/cockroach
+        echo "PR status changed. Exiting."
+        exit 0
+    fi
+    sleep 15
+done
